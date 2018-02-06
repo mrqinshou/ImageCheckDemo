@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 /**
  * Description:图形验证码控件
@@ -21,7 +22,7 @@ import android.view.View;
 public class ImageCheckCodeView extends View {
     private Paint mPaint;   //画笔,画圆角矩形的进度条,画进度游标
     private Bitmap mBitmap; //进行图片验证的原图
-    private Bitmap waitVerificationBitmap;   //等待验证的图片,是原图挖取掉一个拼图块后的图片
+    private Bitmap waitCheckBitmap;   //等待验证的图片,是原图挖取掉一个拼图块后的图片
     private Puzzle puzzle;  //进行验证的拼图块
     private RectF roundRectF;   //进度条的圆角矩形
     private float progress = 0; //当前手机的滑动进度
@@ -33,6 +34,20 @@ public class ImageCheckCodeView extends View {
 
     public void setOnCheckResultCallback(OnCheckResultCallback onCheckResultCallback) {
         this.onCheckResultCallback = onCheckResultCallback;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.mBitmap = bitmap;
+        if (getMeasuredWidth() == 0 || getMeasuredHeight() == 0) {
+            getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    initBitmap();
+                }
+            });
+        } else {
+            initBitmap();
+        }
     }
 
     public ImageCheckCodeView(Context context) {
@@ -49,14 +64,12 @@ public class ImageCheckCodeView extends View {
         mPaint = new Paint();
         //创建进度条的圆角矩形的显示区域
         roundRectF = new RectF();
-        //获取验证码原图片
-        mBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.b);
-        //获取拼图块
+        //创建拼图块对象
         puzzle = new Puzzle();
-
         puzzleSrc = new Rect();
         puzzleDst = new Rect();
     }
+
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -76,21 +89,30 @@ public class ImageCheckCodeView extends View {
         } else {
             height = getContext().getResources().getDisplayMetrics().heightPixels / 3;
         }
-        seekBarHeight = height / 10;
-        roundRectF.set(0, height - seekBarHeight * 2, width, height - seekBarHeight);
+        setMeasuredDimension(width, height);
 
-        puzzle.setContainerWidth(width);
-        puzzle.setContainerHeight(height);
+        initBitmap();
+    }
+
+    private void initBitmap() {
+        if (mBitmap == null) {
+            mBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.a);
+        }
+
+        seekBarHeight = getMeasuredHeight() / 10;
+        roundRectF.set(0, getMeasuredHeight() - seekBarHeight * 2, getMeasuredWidth(), getMeasuredHeight() - seekBarHeight);
+
+        puzzle.setContainerWidth(getMeasuredWidth());
+        puzzle.setContainerHeight(getMeasuredHeight());
         puzzle.setBitmap(mBitmap);
 
-        waitVerificationBitmap = BitmapUtil.getWaitVerificationBitmap(mBitmap, puzzle, width, height);
-        setMeasuredDimension(width, height);
+        waitCheckBitmap = BitmapUtil.getWaitCheckBitmap(mBitmap, puzzle, getMeasuredWidth(), getMeasuredHeight());
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawBitmap(waitVerificationBitmap, 0, 0, null);
+        canvas.drawBitmap(waitCheckBitmap, 0, 0, null);
         //画灰色,50% 透明度的圆角矩形的指示条
         mPaint.setColor(Color.argb(128, 128, 128, 128));
         canvas.drawRoundRect(roundRectF, 45, 45, mPaint);

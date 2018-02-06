@@ -5,9 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 
 
 /**
@@ -17,63 +19,17 @@ import android.graphics.Rect;
  */
 
 public class BitmapUtil {
-    public static Bitmap getPuzzleBitmap(Bitmap bitmap, Puzzle puzzle) {
-        Bitmap mBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
+    public static Bitmap drawable2Bitmap(Drawable drawable) {
+        if (drawable == null) {
+            return null;
+        }
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+        Bitmap mBitmap = Bitmap.createBitmap(width, height, config);
         Canvas mCanvas = new Canvas(mBitmap);
-        Paint mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        Path mPath = new Path();
-
-        mPath.moveTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.cubicTo(puzzle.getX() + puzzle.getWidth() / 6, puzzle.getY()
-                , puzzle.getX() + puzzle.getWidth() - puzzle.getWidth() / 6, puzzle.getY()
-                , puzzle.getX() + puzzle.getWidth() - puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth(), puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth(), puzzle.getY() + puzzle.getHeight());
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight());
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() - puzzle.getHeight() / 4);
-        mPath.cubicTo(puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() - puzzle.getHeight() / 8
-                , puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4 + puzzle.getHeight() / 8
-                , puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 2);
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 4);
-
-        mCanvas.drawPath(mPath, mPaint);
-        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        mCanvas.drawBitmap(bitmap, 0, 0, mPaint);
-
-        return mBitmap;
-    }
-
-    public static Bitmap getWaitVerificationBitmap(Bitmap bitmap, Puzzle puzzle) {
-        int bitmapWidth = bitmap.getWidth();
-        int bitmapHeight = bitmap.getHeight();
-        Bitmap mBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
-
-        Canvas mCanvas = new Canvas(mBitmap);
-        Paint mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        Path mPath = new Path();
-
-        mPath.moveTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.cubicTo(puzzle.getX() + puzzle.getWidth() / 6, puzzle.getY()
-                , puzzle.getX() + puzzle.getWidth() - puzzle.getWidth() / 6, puzzle.getY()
-                , puzzle.getX() + puzzle.getWidth() - puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth(), puzzle.getY() + puzzle.getHeight() / 4);
-        mPath.lineTo(puzzle.getX() + puzzle.getWidth(), puzzle.getY() + puzzle.getHeight());
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight());
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() - puzzle.getHeight() / 4);
-        mPath.cubicTo(puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() - puzzle.getHeight() / 8
-                , puzzle.getX() + puzzle.getWidth() / 3, puzzle.getY() + puzzle.getHeight() / 4 + puzzle.getHeight() / 8
-                , puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 2);
-        mPath.lineTo(puzzle.getX(), puzzle.getY() + puzzle.getHeight() / 4);
-
-        mCanvas.drawPath(mPath, mPaint);
-        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
-
-        mCanvas.drawBitmap(bitmap, 0, 0, mPaint);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(mCanvas);
         return mBitmap;
     }
 
@@ -119,7 +75,7 @@ public class BitmapUtil {
         return mBitmap;
     }
 
-    public static Bitmap getWaitVerificationBitmap(Bitmap bitmap, Puzzle puzzle, int width, int height) {
+    public static Bitmap getWaitCheckBitmap(Bitmap bitmap, Puzzle puzzle, int width, int height) {
         Bitmap mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         Canvas mCanvas = new Canvas(mBitmap);
