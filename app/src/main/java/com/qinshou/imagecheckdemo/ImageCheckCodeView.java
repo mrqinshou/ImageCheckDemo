@@ -66,6 +66,7 @@ public class ImageCheckCodeView extends View {
         roundRectF = new RectF();
         //创建拼图块对象
         puzzle = new Puzzle();
+        //拼图块的绘制区域和显示区域
         puzzleSrc = new Rect();
         puzzleDst = new Rect();
     }
@@ -82,11 +83,13 @@ public class ImageCheckCodeView extends View {
         if (widthMode == MeasureSpec.EXACTLY) {
             width = widthSize;
         } else {
+            //如果没有指定宽,默认宽度为屏幕宽
             width = getContext().getResources().getDisplayMetrics().widthPixels;
         }
         if (heightMode == MeasureSpec.EXACTLY) {
             height = heightSize;
         } else {
+            //如果没有指定高,默认高度为屏幕高的 1/3
             height = getContext().getResources().getDisplayMetrics().heightPixels / 3;
         }
         setMeasuredDimension(width, height);
@@ -94,18 +97,26 @@ public class ImageCheckCodeView extends View {
         initBitmap();
     }
 
+    /**
+     * Description:初始化图片,获取拼图块和挖取拼图块后的等待验证的图片
+     * Date:2018/2/7
+     */
     private void initBitmap() {
         if (mBitmap == null) {
             mBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.a);
         }
-
+        //设置进度条的高度为控件高度的 1/10
         seekBarHeight = getMeasuredHeight() / 10;
+        //设置进度条现在在控件底部,距离底部的距离也为控件高度的 1/10
         roundRectF.set(0, getMeasuredHeight() - seekBarHeight * 2, getMeasuredWidth(), getMeasuredHeight() - seekBarHeight);
 
+        //将控件宽高传递给 puzzle 对象
         puzzle.setContainerWidth(getMeasuredWidth());
         puzzle.setContainerHeight(getMeasuredHeight());
+        //将原图传递给 puzzle 对象,puzzle 内部会将图片处理成拼图块的样子
         puzzle.setBitmap(mBitmap);
 
+        //根据原图和 puzzle 对象获取挖取拼图块后的图片,即等待验证的图片
         waitCheckBitmap = BitmapUtil.getWaitCheckBitmap(mBitmap, puzzle, getMeasuredWidth(), getMeasuredHeight());
     }
 
@@ -161,7 +172,7 @@ public class ImageCheckCodeView extends View {
                 }
                 if (event.getRawX() > puzzle.getX() + puzzle.getWidth() / 2 - puzzle.getWidth() / 20
                         && event.getRawX() < puzzle.getX() + puzzle.getWidth() / 2 + puzzle.getWidth() / 20) {
-                    //松手时触摸点在拼图块中心的横坐标左右偏差不超过拼图块宽度的十分之一则验证成功
+                    //松手时触摸点在拼图块中心的横坐标左右偏差不超过拼图块宽度的 1/20则验证成功
                     onCheckResultCallback.onSuccess();
                 } else {
                     onCheckResultCallback.onFailure();
